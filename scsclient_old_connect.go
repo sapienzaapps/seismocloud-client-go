@@ -25,14 +25,16 @@ func (c *scsClientOldProtoImpl) Connect() error {
 	serverlist := make([]*url.URL, 1)
 	serverlist[0], _ = url.Parse(c.server)
 	clientOptions := mqtt.ClientOptions{
-		AutoReconnect: false,
-		ClientID:      c.clientID,
-		Servers:       serverlist,
-		Username:      c.user,
-		Password:      c.pass,
-		WillEnabled:   true,
-		WillTopic:     "server",
-		WillPayload:   willpayload,
+		AutoReconnect:  false,
+		ClientID:       c.clientID,
+		Servers:        serverlist,
+		Username:       c.user,
+		Password:       c.pass,
+		WillEnabled:    true,
+		WillTopic:      "server",
+		WillPayload:    willpayload,
+		ConnectTimeout: 5 * time.Second,
+		WriteTimeout:   5 * time.Second,
 	}
 
 	c.mqttc = mqtt.NewClient(&clientOptions)
