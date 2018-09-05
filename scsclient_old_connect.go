@@ -50,6 +50,10 @@ func (c *scsClientOldProtoImpl) Connect() error {
 	c.aliveticker = time.NewTicker(15 * time.Minute)
 	go func() {
 		for range c.aliveticker.C {
+			if !c.mqttc.IsConnected() {
+				c.aliveticker.Stop()
+				return
+			}
 			c.Alive()
 		}
 	}()

@@ -7,7 +7,6 @@ import (
 )
 
 type SCSClientOldProtocol interface {
-	Alive()
 	SetLocation(location SCSLocation)
 	Connect() error
 	Quake()
