@@ -1,6 +1,7 @@
 package scsclient
 
 import (
+	"crypto/tls"
 	"github.com/eclipse/paho.mqtt.golang"
 	"net/url"
 	"time"
@@ -35,6 +36,12 @@ func (c *scsClientOldProtoImpl) Connect() error {
 		WillPayload:    willpayload,
 		ConnectTimeout: 5 * time.Second,
 		WriteTimeout:   5 * time.Second,
+	}
+
+	if c.skipTLS {
+		clientOptions.TLSConfig = tls.Config{
+			InsecureSkipVerify: true,
+		}
 	}
 
 	c.mqttc = mqtt.NewClient(&clientOptions)

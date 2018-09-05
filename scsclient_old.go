@@ -14,6 +14,9 @@ type SCSClientOldProtocol interface {
 	Disconnect()
 	GetTime() *time.Time
 	IsConnected() bool
+
+	// CAUTION: can lead to MITM - use only for testing
+	SetSkipTLS(bool)
 }
 
 type SCSOldConfigCallback func(sigma float32)
@@ -38,6 +41,7 @@ type scsClientOldProtoImpl struct {
 	user           string
 	pass           string
 	deviceId       string
+	skipTLS        bool
 	mqttc          mqtt.Client
 	lastalive      time.Time
 	aliveticker    *time.Ticker
@@ -58,4 +62,8 @@ func (c *scsClientOldProtoImpl) IsConnected() bool {
 
 func (c *scsClientOldProtoImpl) SetLocation(location SCSLocation) {
 	c.location = location
+}
+
+func (c *scsClientOldProtoImpl) SetSkipTLS(b bool) {
+	c.skipTLS = b
 }
