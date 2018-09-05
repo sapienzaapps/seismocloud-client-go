@@ -20,6 +20,18 @@ type SCSOldConfigCallback func(sigma float32)
 type SCSOldRebootCallback func()
 type SCSOldUpdateCallback func(hostname string, path string)
 
+const (
+	API_KEEPALIVE          = 1
+	API_QUAKE              = 2
+	API_TIMEREQ            = 3
+	API_TIMERESP           = 4
+	API_CFG                = 5
+	API_DISCONNECT         = 6
+	API_TEMPERATURE        = 7
+	API_REBOOT             = 8
+	API_KEEPALIVE_POSITION = 9
+)
+
 type scsClientOldProtoImpl struct {
 	server         string
 	clientID       string
