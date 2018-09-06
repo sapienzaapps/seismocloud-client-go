@@ -1,10 +1,12 @@
 package scsclient
 
+import "github.com/shopspring/decimal"
+
 type SCSLocation struct {
-	Lat float64
-	Lng float64
+	Lat decimal.Decimal
+	Lng decimal.Decimal
 }
 
 func (loc *SCSLocation) IsValid() bool {
-	return loc.Lat != 0 || loc.Lng != 0
+	return !(loc.Lat.IsZero() && loc.Lng.IsZero())
 }

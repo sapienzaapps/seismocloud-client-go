@@ -60,10 +60,12 @@ func (c *clientV1impl) Alive() {
 	j += copy(alivepayload[j:j+4], []byte(c.opts.Version))
 
 	if c.opts.Location.IsValid() {
-		binary.LittleEndian.PutUint32(alivepayload[j:j+4], math.Float32bits(float32(c.opts.Location.Lat)))
+		lat, _ := c.opts.Location.Lat.Float64()
+		binary.LittleEndian.PutUint32(alivepayload[j:j+4], math.Float32bits(float32(lat)))
 		j += 4
 
-		binary.LittleEndian.PutUint32(alivepayload[j:j+4], math.Float32bits(float32(c.opts.Location.Lng)))
+		lng, _ := c.opts.Location.Lng.Float64()
+		binary.LittleEndian.PutUint32(alivepayload[j:j+4], math.Float32bits(float32(lng)))
 		j += 4
 	}
 
