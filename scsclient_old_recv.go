@@ -6,14 +6,16 @@ import (
 	"time"
 )
 
-func (c *scsClientOldProtoImpl) recvMessage(sock mqtt.Client, m mqtt.Message) {
+func (c *clientV1impl) recvMessage(sock mqtt.Client, m mqtt.Message) {
 	payload := m.Payload()
 	switch payload[0] {
 	case API_CFG:
-		if c.logger != nil {
-			c.logger.Debugf("[%s] CFG\n", c.deviceId)
+		if c.opts.Logger != nil {
+			c.opts.Logger.Debugf("[%s] CFG\n", c.opts.DeviceId)
 		}
-		c.cfgcallback(float32frombytes(payload[1:5]))
+		if c.opts.ConfigCallback != nil {
+			c.opts.ConfigCallback(float32frombytes(payload[1:5]))
+		}
 
 		hostname := ""
 		path := ""
@@ -31,26 +33,28 @@ func (c *scsClientOldProtoImpl) recvMessage(sock mqtt.Client, m mqtt.Message) {
 			offset += uint(plen)
 		}
 
-		if hostname != "" && path != "" {
+		if hostname != "" && path != "" && c.opts.UpdateCallback != nil {
 			// Do update
-			c.updatecallback(hostname, path)
+			c.opts.UpdateCallback(hostname, path)
 		}
 	case API_REBOOT:
-		if c.logger != nil {
-			c.logger.Debugf("[%s] Reboot\n", c.deviceId)
+		if c.opts.Logger != nil {
+			c.opts.Logger.Debugf("[%s] Reboot\n", c.opts.DeviceId)
 		}
-		c.rebootcallback()
+		if c.opts.RebootCallback != nil {
+			c.opts.RebootCallback()
+		}
 	case API_TIMERESP:
 		c.lasttime = time.Unix(int64(binary.LittleEndian.Uint32(payload[1:])), 0)
-		if c.logger != nil {
-			c.logger.Debugf("[%s] Time response\n", c.deviceId)
+		if c.opts.Logger != nil {
+			c.opts.Logger.Debugf("[%s] Time response\n", c.opts.DeviceId)
 		}
 		if c.timechan != nil {
 			c.timechan <- true
 		}
 	default:
-		if c.logger != nil {
-			c.logger.Debugf("[%s] Unknown message\n", c.deviceId)
+		if c.opts.Logger != nil {
+			c.opts.Logger.Debugf("[%s] Unknown message\n", c.opts.DeviceId)
 		}
 	}
 }

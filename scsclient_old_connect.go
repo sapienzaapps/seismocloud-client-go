@@ -7,30 +7,30 @@ import (
 	"time"
 )
 
-func (c *scsClientOldProtoImpl) Connect() error {
+func (c *clientV1impl) Connect() error {
 	if c.mqttc != nil && c.mqttc.IsConnected() {
 		return nil
 	}
 
-	if c.logger != nil {
-		c.logger.Debugf("[%s] Connecting\n", c.deviceId)
+	if c.opts.Logger != nil {
+		c.opts.Logger.Debugf("[%s] Connecting\n", c.opts.DeviceId)
 	}
 
-	c.deviceId = c.deviceId
-	willpayload := make([]byte, 1+1+len(c.deviceId))
+	c.opts.DeviceId = c.opts.DeviceId
+	willpayload := make([]byte, 1+1+len(c.opts.DeviceId))
 	willpayload[0] = API_DISCONNECT
-	willpayload[1] = byte(len(c.deviceId))
-	copy(willpayload[2:2+willpayload[1]], []byte(c.deviceId))
+	willpayload[1] = byte(len(c.opts.DeviceId))
+	copy(willpayload[2:2+willpayload[1]], []byte(c.opts.DeviceId))
 
 	// MQTT connection
 	serverlist := make([]*url.URL, 1)
-	serverlist[0], _ = url.Parse(c.server)
+	serverlist[0], _ = url.Parse(c.opts.Server)
 	clientOptions := mqtt.ClientOptions{
 		AutoReconnect:  false,
-		ClientID:       c.clientID,
+		ClientID:       c.opts.ClientId,
 		Servers:        serverlist,
-		Username:       c.user,
-		Password:       c.pass,
+		Username:       c.opts.User,
+		Password:       c.opts.Pass,
 		WillEnabled:    true,
 		WillTopic:      "server",
 		WillPayload:    willpayload,
@@ -38,7 +38,7 @@ func (c *scsClientOldProtoImpl) Connect() error {
 		WriteTimeout:   5 * time.Second,
 	}
 
-	if c.skipTLS {
+	if c.opts.SkipTLS {
 		clientOptions.TLSConfig = tls.Config{
 			InsecureSkipVerify: true,
 		}
@@ -50,9 +50,9 @@ func (c *scsClientOldProtoImpl) Connect() error {
 		return conntoken.Error()
 	}
 
-	c.mqttc.Subscribe("device-"+c.deviceId, 0, c.recvMessage)
-	if c.logger != nil {
-		c.logger.Debugf("[%s] Connected\n", c.deviceId)
+	c.mqttc.Subscribe("device-"+c.opts.DeviceId, 0, c.recvMessage)
+	if c.opts.Logger != nil {
+		c.opts.Logger.Debugf("[%s] Connected\n", c.opts.DeviceId)
 	}
 
 	c.Alive()

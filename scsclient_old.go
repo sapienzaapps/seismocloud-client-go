@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type SCSClientOldProtocol interface {
+type ClientV1 interface {
 	SetLocation(location SCSLocation)
 	Connect() error
 	Quake()
@@ -19,9 +19,27 @@ type SCSClientOldProtocol interface {
 	SetSkipTLS(bool)
 }
 
-type SCSOldConfigCallback func(sigma float32)
-type SCSOldRebootCallback func()
-type SCSOldUpdateCallback func(hostname string, path string)
+type V1ConfigCallback func(sigma float32)
+type V1RebootCallback func()
+type V1UpdateCallback func(hostname string, path string)
+
+type ClientV1Options struct {
+	Server   string
+	ClientId string
+	User     string
+	Pass     string
+	DeviceId string
+	SkipTLS  bool
+
+	Model    string
+	Version  string
+	Location SCSLocation
+
+	Logger         *logging.Logger
+	ConfigCallback V1ConfigCallback
+	UpdateCallback V1UpdateCallback
+	RebootCallback V1RebootCallback
+}
 
 const (
 	API_KEEPALIVE          = 1
@@ -35,35 +53,24 @@ const (
 	API_KEEPALIVE_POSITION = 9
 )
 
-type scsClientOldProtoImpl struct {
-	server         string
-	clientID       string
-	user           string
-	pass           string
-	deviceId       string
-	skipTLS        bool
-	mqttc          mqtt.Client
-	lastalive      time.Time
-	aliveticker    *time.Ticker
-	sigma          float32
-	lasttime       time.Time
-	timechan       chan bool
-	noiseticker    *time.Ticker
-	location       SCSLocation
-	logger         *logging.Logger
-	cfgcallback    SCSOldConfigCallback
-	rebootcallback SCSOldRebootCallback
-	updatecallback SCSOldUpdateCallback
+type clientV1impl struct {
+	opts        ClientV1Options
+	mqttc       mqtt.Client
+	lastalive   time.Time
+	aliveticker *time.Ticker
+	lasttime    time.Time
+	timechan    chan bool
+	noiseticker *time.Ticker
 }
 
-func (c *scsClientOldProtoImpl) IsConnected() bool {
+func (c *clientV1impl) IsConnected() bool {
 	return c.mqttc.IsConnected()
 }
 
-func (c *scsClientOldProtoImpl) SetLocation(location SCSLocation) {
-	c.location = location
+func (c *clientV1impl) SetLocation(location SCSLocation) {
+	c.opts.Location = location
 }
 
-func (c *scsClientOldProtoImpl) SetSkipTLS(b bool) {
-	c.skipTLS = b
+func (c *clientV1impl) SetSkipTLS(b bool) {
+	c.opts.SkipTLS = b
 }
