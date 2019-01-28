@@ -39,7 +39,7 @@ func (c *clientV1impl) Connect() error {
 	}
 
 	if c.opts.SkipTLS {
-		clientOptions.TLSConfig = tls.Config{
+		clientOptions.TLSConfig = &tls.Config{
 			InsecureSkipVerify: true,
 		}
 	}
