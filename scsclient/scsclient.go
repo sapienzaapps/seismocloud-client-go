@@ -1,0 +1,76 @@
+package scsclient
+
+import (
+	"net"
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/shopspring/decimal"
+)
+
+type Client interface {
+	// Connect to the SeismoCloud network
+	Connect() error
+
+	// Check if it's connected to the SeismoCloud network
+	IsConnected() bool
+
+	// This function sends the new value for temperature sensor (if available)
+	SendTemperature(temp float64) error
+
+	// This function sends the level of battery (if available)
+	SendBattery(batteryLevel float64) error
+
+	// This function sends the current power source (if available)
+	//SendPowerSource(source PowerSource) error
+
+	// This function sends the current location (if available)
+	SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error
+
+	// This function send the QUAKE message when a new vibration is detected
+	Quake(quaketime time.Time, x float64, y float64, z float64) error
+
+	// Retrieve the current time from SCS network
+	GetTime() (time.Time, error)
+
+	// Send stream data (if enabled)
+	SendStreamData(datatime time.Time, x float64, y float64, z float64) error
+
+	// Set local IP address information
+	SendLocalIP(localAddr net.IPAddr) error
+
+	// Set public IP address information
+	SendPublicIP(publicAddr net.IPAddr) error
+
+	// Set WiFi information (if applicable)
+	SendWiFiInfo(rssi float64, bssid net.HardwareAddr, essid string) error
+
+	// Close the connection gracefully
+	Close() error
+}
+
+type ClientOptions struct {
+	// Device ID
+	DeviceId uuid.UUID
+
+	// Model of this sensor. For example: esp8266, uno, etc. Check the documentation
+	Model string
+
+	// Version of the software
+	Version string
+
+	// Function to execute when a new sigma value is received
+	OnNewSigma func(Client, float64)
+
+	// Function to execute when a reboot command is received
+	OnReboot func(Client)
+
+	// Function to execute when the stream command ("on" or "off") is received
+	// The second parameter indicates whether the stream should be started (true)
+	// or not (false)
+	OnStreamCommand func(Client, bool)
+
+	// Function to execute when a new probe speed is received. The second
+	// parameter is the new frequency of probing (in Hz)
+	OnProbeSpeedSet func(Client, int64)
+}

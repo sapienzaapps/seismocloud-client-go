@@ -1,10 +1,12 @@
 module github.com/sapienzaapps/seismocloud-client-go
 
-go 1.12
+go 1.13
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
-	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v1.2.0
+	golang.org/x/net v0.0.0-20191207000613-e7e4b65ae663 // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )
