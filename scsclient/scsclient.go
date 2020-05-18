@@ -15,11 +15,15 @@ type Client interface {
 	// Check if it's connected to the SeismoCloud network
 	IsConnected() bool
 
+	// Send alive manually (IMPORTANT: this is periodically called by an internal ticker, so normally there is no need
+	// to call alive manually)
+	SendAlive() error
+
 	// This function sends the new value for temperature sensor (if available)
 	SendTemperature(temp float64) error
 
 	// This function sends the level of battery (if available)
-	SendBattery(batteryLevel float64) error
+	//SendBattery(batteryLevel float64) error
 
 	// This function sends the current power source (if available)
 	//SendPowerSource(source PowerSource) error
@@ -31,16 +35,16 @@ type Client interface {
 	Quake(quaketime time.Time, x float64, y float64, z float64) error
 
 	// Retrieve the current time from SCS network
-	GetTime() (time.Time, error)
+	RequestTime() error
 
 	// Send stream data (if enabled)
 	SendStreamData(datatime time.Time, x float64, y float64, z float64) error
 
 	// Set local IP address information
-	SendLocalIP(localAddr net.IPAddr) error
+	SendLocalIP(localAddr net.IP) error
 
 	// Set public IP address information
-	SendPublicIP(publicAddr net.IPAddr) error
+	SendPublicIP(publicAddr net.IP) error
 
 	// Set WiFi information (if applicable)
 	SendWiFiInfo(rssi float64, bssid net.HardwareAddr, essid string) error
@@ -73,4 +77,19 @@ type ClientOptions struct {
 	// Function to execute when a new probe speed is received. The second
 	// parameter is the new frequency of probing (in Hz)
 	OnProbeSpeedSet func(Client, int64)
+
+	// Function to execute when a new time is received
+	OnTimeReceived func(Client, int64, int64, int64, int64)
+
+	// SeismoCloud broker URL
+	// For tests/dev, use: tls://mqtt-seismocloud.test.sapienzaapps.it
+	SeismoCloudBroker string
+
+	// SeismoCloud broker Username
+	// For tests/dev, use: embedded
+	Username string
+
+	// SeismoCloud broker Password
+	// For tests/dev, use: embedded
+	Password string
 }

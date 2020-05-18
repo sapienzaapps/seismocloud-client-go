@@ -1,8 +1,13 @@
 package scsclient
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func (c *_clientimpl) SendStreamData(datatime time.Time, x float64, y float64, z float64) error {
-	// TODO: send mqtt temperature update
-	return nil
+	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/streamdata", c.opts.DeviceId), 0, false,
+		fmt.Sprintf("%d;%f;%f;%f", datatime.UnixNano()/1000000, x, y, z))
+	token.Wait()
+	return token.Error()
 }

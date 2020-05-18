@@ -15,10 +15,6 @@ type _clientimpl struct {
 	mqttc       mqtt.Client
 	lastalive   time.Time
 	aliveticker *time.Ticker
-	lasttime    time.Time
-	timechan    chan bool
-	//noiseticker *time.Ticker
-	// TODO: i metodi del client demo vanno messi a parte
 }
 
 func (c *_clientimpl) IsConnected() bool {
@@ -26,6 +22,8 @@ func (c *_clientimpl) IsConnected() bool {
 }
 
 func (c *_clientimpl) Close() error {
+	c.aliveticker.Stop()
+
 	c.mqttc.Publish(fmt.Sprintf("sensor/%s/disconnect", c.opts.DeviceId), 0, false, "y").Wait()
 	c.mqttc.Disconnect(1000)
 	return nil
@@ -37,7 +35,15 @@ func (c *_clientimpl) Connect() error {
 		return conntoken.Error()
 	}
 
-	// TODO: register internal tickers
+	// Register internal ticker for Alive
+	c.aliveticker = time.NewTicker(14 * time.Minute)
+	go func() {
+		select {
+		case <-c.aliveticker.C:
+			// TODO: log the error
+			_ = c.SendAlive()
+		}
+	}()
 
 	// Register MQTT handlers
 	c.mqttc.SubscribeMultiple(map[string]byte{
@@ -53,7 +59,7 @@ func (c *_clientimpl) Connect() error {
 
 		topicparts := strings.SplitN(message.Topic(), "/", 3)
 		command := topicparts[2]
-		//messageReceivedAt := time.Now()
+		messageReceivedAt := time.Now()
 
 		switch command {
 		case "sigma":
@@ -72,7 +78,28 @@ func (c *_clientimpl) Connect() error {
 				c.opts.OnReboot(c)
 			}
 		case "timesync":
-			// TODO
+			if c.opts.OnTimeReceived != nil {
+
+				tsparts := strings.Split(string(message.Payload()), ";")
+				if len(tsparts) != 3 {
+					return //errors.New("time payload format error")
+				}
+				t0, err := strconv.ParseInt(tsparts[0], 10, 64)
+				if err != nil {
+					return //errors.Wrap(err, "time T0 format error")
+				}
+				t1, err := strconv.ParseInt(tsparts[1], 10, 64)
+				if err != nil {
+					return //errors.Wrap(err, "time T1 format error")
+				}
+				t2, err := strconv.ParseInt(tsparts[2], 10, 64)
+				if err != nil {
+					return //errors.Wrap(err, "time T2 format error")
+				}
+				t3 := messageReceivedAt.UnixNano() / 1000000
+
+				c.opts.OnTimeReceived(c, t0, t1, t2, t3)
+			}
 		case "stream":
 			if c.opts.OnStreamCommand != nil {
 				c.opts.OnStreamCommand(c, string(message.Payload()) == "on")
@@ -93,5 +120,5 @@ func (c *_clientimpl) Connect() error {
 		}
 	})
 
-	return nil
+	return c.SendAlive()
 }

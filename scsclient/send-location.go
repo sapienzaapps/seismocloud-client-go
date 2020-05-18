@@ -1,9 +1,12 @@
 package scsclient
 
-import "github.com/shopspring/decimal"
+import (
+	"fmt"
+	"github.com/shopspring/decimal"
+)
 
 func (c *_clientimpl) SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error {
-
-	// TODO: send mqtt location update
-	return nil
+	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/location", c.opts.DeviceId), 0, false, fmt.Sprintf("%s;%s", latitude, longitude))
+	token.Wait()
+	return token.Error()
 }
