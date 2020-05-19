@@ -1,6 +1,7 @@
 package scsclient
 
 import (
+	"crypto/tls"
 	"net"
 	"time"
 
@@ -95,4 +96,7 @@ type ClientOptions struct {
 	// SeismoCloud broker Password
 	// For tests/dev, use: embedded
 	Password string
+
+	// Custom CA root store for connection
+	TLSConfig *tls.Config
 }

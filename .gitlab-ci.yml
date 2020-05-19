@@ -1,0 +1,19 @@
+stages:
+  - codecheck
+
+codecheck:
+  tags:
+    - golang
+  stage: codecheck
+  before_script:
+    - go get github.com/securego/gosec/cmd/gosec
+    - go get honnef.co/go/tools/cmd/staticcheck
+    - go get github.com/gordonklaus/ineffassign
+    - go get github.com/kisielk/errcheck
+  script:
+    - go test -v ./...
+    - go vet ./...
+    - gosec ./...
+    - staticcheck ./...
+    - ineffassign .
+    - errcheck ./...

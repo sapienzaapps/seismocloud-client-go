@@ -10,15 +10,22 @@ import (
 
 func New(options ClientOptions) (Client, error) {
 	if options.DeviceId == uuid.Nil {
-		return nil, errors.New("Device ID is missing!")
+		return nil, errors.New("device ID is missing")
 	}
 
-	mqttoptions := mqtt.NewClientOptions().AddBroker(options.SeismoCloudBroker)
+	mqttoptions := mqtt.NewClientOptions()
+
+	mqttoptions.AddBroker(options.SeismoCloudBroker)
+	if options.Username != "" {
+		mqttoptions.SetUsername(options.Username)
+		mqttoptions.SetPassword(options.Password)
+	}
+	if options.TLSConfig != nil {
+		mqttoptions.SetTLSConfig(options.TLSConfig)
+	}
+
 	mqttoptions.SetClientID(options.DeviceId.String())
 	mqttoptions.SetAutoReconnect(false)
-
-	mqttoptions.SetUsername(options.Username)
-	mqttoptions.SetPassword(options.Password)
 
 	mqttoptions.SetOrderMatters(true)
 	mqttoptions.SetKeepAlive(10 * time.Second)
@@ -28,7 +35,8 @@ func New(options ClientOptions) (Client, error) {
 	mqttc := mqtt.NewClient(mqttoptions)
 
 	return &_clientimpl{
-		opts:  options,
-		mqttc: mqttc,
+		opts:            options,
+		mqttc:           mqttc,
+		aliveTickerStop: make(chan int),
 	}, nil
 }
