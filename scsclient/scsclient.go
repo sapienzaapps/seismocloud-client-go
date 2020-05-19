@@ -15,6 +15,9 @@ type Client interface {
 	// Check if it's connected to the SeismoCloud network
 	IsConnected() bool
 
+	// Returns the configured Device ID
+	GetDeviceId() uuid.UUID
+
 	// Send alive manually (IMPORTANT: this is periodically called by an internal ticker, so normally there is no need
 	// to call alive manually)
 	SendAlive() error
