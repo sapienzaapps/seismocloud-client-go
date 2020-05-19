@@ -11,10 +11,11 @@ import (
 )
 
 type _clientimpl struct {
-	opts        ClientOptions
-	mqttc       mqtt.Client
-	lastalive   time.Time
-	aliveticker *time.Ticker
+	opts            ClientOptions
+	mqttc           mqtt.Client
+	lastalive       time.Time
+	aliveTicker     *time.Ticker
+	aliveTickerStop chan int
 }
 
 func (c *_clientimpl) IsConnected() bool {
@@ -22,7 +23,8 @@ func (c *_clientimpl) IsConnected() bool {
 }
 
 func (c *_clientimpl) Close() error {
-	c.aliveticker.Stop()
+	c.aliveTicker.Stop()
+	c.aliveTickerStop <- 0
 
 	c.mqttc.Publish(fmt.Sprintf("sensor/%s/disconnect", c.opts.DeviceId), 0, false, "y").Wait()
 	c.mqttc.Disconnect(1000)
@@ -36,12 +38,15 @@ func (c *_clientimpl) Connect() error {
 	}
 
 	// Register internal ticker for Alive
-	c.aliveticker = time.NewTicker(14 * time.Minute)
+	c.aliveTicker = time.NewTicker(14 * time.Minute)
 	go func() {
 		select {
-		case <-c.aliveticker.C:
+		case <-c.aliveTicker.C:
 			// TODO: log the error
 			_ = c.SendAlive()
+		case <-c.aliveTickerStop:
+			// Avoid goroutine stall on stop
+			return
 		}
 	}()
 
