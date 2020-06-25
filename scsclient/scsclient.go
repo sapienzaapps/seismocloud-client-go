@@ -27,10 +27,10 @@ type Client interface {
 	SendTemperature(temp float64) error
 
 	// This function sends the level of battery (if available)
-	//SendBattery(batteryLevel float64) error
+	SendBattery(batteryLevel float64) error
 
 	// This function sends the current power source (if available)
-	//SendPowerSource(source PowerSource) error
+	SendPowerSource(source PowerSource) error
 
 	// This function sends the current location (if available)
 	SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error
@@ -44,14 +44,17 @@ type Client interface {
 	// Send stream data (if enabled)
 	SendStreamData(datatime time.Time, x float64, y float64, z float64) error
 
-	// Set local IP address information
+	// Setnd local IP address information
 	SendLocalIP(localAddr net.IP) error
 
-	// Set public IP address information
+	// Send public IP address information
 	SendPublicIP(publicAddr net.IP) error
 
-	// Set WiFi information (if applicable)
+	// Send WiFi information (if applicable)
 	SendWiFiInfo(rssi float64, bssid net.HardwareAddr, essid string) error
+
+	// Send current threshold
+	SendThreshold(threshold float64) error
 
 	// Close the connection gracefully
 	Close() error
