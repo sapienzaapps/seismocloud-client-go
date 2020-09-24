@@ -1,9 +1,14 @@
 package scsclient
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func (c *_clientimpl) SendThreshold(threshold float64) error {
 	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/treshold", c.opts.DeviceID), 0, false, fmt.Sprintf("%f", threshold))
-	token.WaitTimeout(clientTimeout)
+	if !token.WaitTimeout(clientTimeout) {
+		return errors.New("command timeout")
+	}
 	return token.Error()
 }

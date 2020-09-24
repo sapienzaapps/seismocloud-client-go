@@ -38,6 +38,6 @@ func New(options ClientOptions) (Client, error) {
 	return &_clientimpl{
 		opts:            options,
 		mqttc:           mqttc,
-		aliveTickerStop: make(chan int),
+		aliveTickerStop: make(chan int, 1),
 	}, nil
 }

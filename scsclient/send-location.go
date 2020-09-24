@@ -1,6 +1,7 @@
 package scsclient
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/shopspring/decimal"
@@ -8,6 +9,8 @@ import (
 
 func (c *_clientimpl) SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error {
 	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/location", c.opts.DeviceID), 0, false, fmt.Sprintf("%s;%s", latitude, longitude))
-	token.WaitTimeout(clientTimeout)
+	if !token.WaitTimeout(clientTimeout) {
+		return errors.New("command timeout")
+	}
 	return token.Error()
 }

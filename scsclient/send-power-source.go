@@ -1,6 +1,9 @@
 package scsclient
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func (c *_clientimpl) SendPowerSource(source PowerSource) error {
 	if err := source.IsValid(); err != nil {
@@ -8,6 +11,8 @@ func (c *_clientimpl) SendPowerSource(source PowerSource) error {
 	}
 
 	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/powersource", c.opts.DeviceID), 0, false, source)
-	token.WaitTimeout(clientTimeout)
+	if !token.WaitTimeout(clientTimeout) {
+		return errors.New("command timeout")
+	}
 	return token.Error()
 }

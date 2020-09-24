@@ -1,6 +1,7 @@
 package scsclient
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -10,7 +11,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-const clientTimeout = 1500
+const clientTimeout = 1500 * time.Millisecond
 
 type _clientimpl struct {
 	opts            ClientOptions
@@ -27,14 +28,17 @@ func (c *_clientimpl) Close() error {
 	c.aliveTickerStop <- 0
 
 	c.mqttc.Publish(fmt.Sprintf("sensor/%s/disconnect", c.opts.DeviceID), 0, false, "y").WaitTimeout(clientTimeout)
-	c.mqttc.Disconnect(clientTimeout)
+	c.mqttc.Disconnect(1000)
 	return nil
 }
 
 func (c *_clientimpl) Connect() error {
 	conntoken := c.mqttc.Connect()
-	if conntoken.WaitTimeout(clientTimeout) && conntoken.Error() != nil {
+	commandOk := conntoken.WaitTimeout(clientTimeout)
+	if commandOk && conntoken.Error() != nil {
 		return conntoken.Error()
+	} else if !commandOk {
+		return errors.New("connect timeout")
 	}
 
 	// Register internal ticker for Alive
