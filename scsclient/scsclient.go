@@ -9,6 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// Client is the SeismoCloud client interface
 type Client interface {
 	// Connect to the SeismoCloud network
 	Connect() error
@@ -17,7 +18,7 @@ type Client interface {
 	IsConnected() bool
 
 	// Returns the configured Device ID
-	GetDeviceId() uuid.UUID
+	GetDeviceID() uuid.UUID
 
 	// Send alive manually (IMPORTANT: this is periodically called by an internal ticker, so normally there is no need
 	// to call alive manually)
@@ -60,9 +61,10 @@ type Client interface {
 	Close() error
 }
 
+// ClientOptions represent all options for the SeismoCloud Client
 type ClientOptions struct {
 	// Device ID
-	DeviceId uuid.UUID
+	DeviceID uuid.UUID
 
 	// Model of this sensor. For example: esp8266, uno, etc. Check the documentation
 	Model string

@@ -10,6 +10,8 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+const clientTimeout = 1500
+
 type _clientimpl struct {
 	opts            ClientOptions
 	mqttc           mqtt.Client
@@ -24,14 +26,14 @@ func (c *_clientimpl) IsConnected() bool {
 func (c *_clientimpl) Close() error {
 	c.aliveTickerStop <- 0
 
-	c.mqttc.Publish(fmt.Sprintf("sensor/%s/disconnect", c.opts.DeviceId), 0, false, "y").Wait()
-	c.mqttc.Disconnect(1000)
+	c.mqttc.Publish(fmt.Sprintf("sensor/%s/disconnect", c.opts.DeviceID), 0, false, "y").WaitTimeout(clientTimeout)
+	c.mqttc.Disconnect(clientTimeout)
 	return nil
 }
 
 func (c *_clientimpl) Connect() error {
 	conntoken := c.mqttc.Connect()
-	if conntoken.Wait() && conntoken.Error() != nil {
+	if conntoken.WaitTimeout(clientTimeout) && conntoken.Error() != nil {
 		return conntoken.Error()
 	}
 
@@ -53,11 +55,11 @@ func (c *_clientimpl) Connect() error {
 
 	// Register MQTT handlers
 	c.mqttc.SubscribeMultiple(map[string]byte{
-		fmt.Sprintf("sensor/%s/sigma", c.opts.DeviceId.String()): byte(2),
-		fmt.Sprintf("sensor/%s/reboot", c.opts.DeviceId):         byte(2),
-		fmt.Sprintf("sensor/%s/timesync", c.opts.DeviceId):       byte(2),
-		fmt.Sprintf("sensor/%s/stream", c.opts.DeviceId):         byte(2),
-		fmt.Sprintf("sensor/%s/probespeed", c.opts.DeviceId):     byte(2),
+		fmt.Sprintf("sensor/%s/sigma", c.opts.DeviceID.String()): byte(2),
+		fmt.Sprintf("sensor/%s/reboot", c.opts.DeviceID):         byte(2),
+		fmt.Sprintf("sensor/%s/timesync", c.opts.DeviceID):       byte(2),
+		fmt.Sprintf("sensor/%s/stream", c.opts.DeviceID):         byte(2),
+		fmt.Sprintf("sensor/%s/probespeed", c.opts.DeviceID):     byte(2),
 	}, func(client mqtt.Client, message mqtt.Message) {
 		if len(message.Payload()) == 0 {
 			return

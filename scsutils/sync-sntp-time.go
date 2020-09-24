@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// SyncSNTPTime do all the math for returning the current time from (S)NTP times
 func SyncSNTPTime(t0 int64, t1 int64, t2 int64, t3 int64) time.Time {
 	if t0 == 0 {
 		// NTP can't handle 34 or 68 years differences, so if we start from 0 then return t2

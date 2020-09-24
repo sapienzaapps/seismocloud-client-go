@@ -8,8 +8,9 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// New creates a new instance of the SeismoCloud client - it does NOT connect the clien to the network yet
 func New(options ClientOptions) (Client, error) {
-	if options.DeviceId == uuid.Nil {
+	if options.DeviceID == uuid.Nil {
 		return nil, errors.New("device ID is missing")
 	}
 
@@ -24,7 +25,7 @@ func New(options ClientOptions) (Client, error) {
 		mqttoptions.SetTLSConfig(options.TLSConfig)
 	}
 
-	mqttoptions.SetClientID(options.DeviceId.String())
+	mqttoptions.SetClientID(options.DeviceID.String())
 	mqttoptions.SetAutoReconnect(false)
 
 	mqttoptions.SetOrderMatters(true)

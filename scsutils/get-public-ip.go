@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// GetPublicIP retrieve the public IP address
 func GetPublicIP() (net.IP, error) {
 	client := new(http.Client)
 

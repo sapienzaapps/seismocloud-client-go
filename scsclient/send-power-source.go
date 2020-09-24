@@ -7,7 +7,7 @@ func (c *_clientimpl) SendPowerSource(source PowerSource) error {
 		return err
 	}
 
-	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/powersource", c.opts.DeviceId), 0, false, source)
-	token.Wait()
+	token := c.mqttc.Publish(fmt.Sprintf("sensor/%s/powersource", c.opts.DeviceID), 0, false, source)
+	token.WaitTimeout(clientTimeout)
 	return token.Error()
 }
