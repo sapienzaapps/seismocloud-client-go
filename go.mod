@@ -1,4 +1,4 @@
-module git.sapienzaapps.it/seismocloud/seismocloud-client-go
+module git.sapienzaapps.it/SeismoCloud/seismocloud-client-go
 
 go 1.13
 
