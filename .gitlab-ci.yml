@@ -3,9 +3,11 @@ stages:
 
 codecheck:
   tags:
-    - golang
+    - docker
   stage: codecheck
+  image: golang:1.15
   before_script:
+    - echo -e "machine git.sapienzaapps.it\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
     - go get github.com/securego/gosec/cmd/gosec
     - go get honnef.co/go/tools/cmd/staticcheck
     - go get github.com/gordonklaus/ineffassign
