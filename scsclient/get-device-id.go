@@ -1,6 +1,6 @@
 package scsclient
 
-import uuid "github.com/satori/go.uuid"
+import "github.com/gofrs/uuid"
 
 func (c *_clientimpl) GetDeviceID() uuid.UUID {
 	return c.opts.DeviceID

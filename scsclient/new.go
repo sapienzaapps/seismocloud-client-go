@@ -5,7 +5,7 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	uuid "github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 // New creates a new instance of the SeismoCloud client - it does NOT connect the clien to the network yet
