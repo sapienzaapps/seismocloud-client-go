@@ -1,7 +1,5 @@
 stages:
   - codecheck
-  - build
-  - update_doc
 
 codecheck:
   tags:
