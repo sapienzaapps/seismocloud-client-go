@@ -105,7 +105,7 @@ type ClientOptions struct {
 
 	// LocalDiscovery indicates whether the local (LAN) discovery part is enabled. When enabled, the sensor replies to
 	// scan probes from apps
-	LocalDiscovery bool
+	// Not implemented: LocalDiscovery bool
 
 	// Logger is a logger for the library
 	Logger logrus.FieldLogger
