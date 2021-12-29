@@ -1,3 +1,4 @@
+//nolint:forbidigo
 package main
 
 import (
@@ -13,7 +14,7 @@ func main() {
 			fmt.Println(c)
 		}
 	}()
-	_, err := localdiscovery.Discovery(context.TODO(), sensors)
+	_, err := localdiscovery.Scan(context.TODO(), sensors)
 	if err != nil {
 		panic(err)
 	}

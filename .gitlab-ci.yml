@@ -1,20 +1,19 @@
 stages:
-  - codecheck
+  - check
 
-codecheck:
+code_check:
   tags:
     - docker
-  stage: codecheck
-  image: golang:1.16
+  stage: check
+  image: golang:1.17
   before_script:
     - echo -e "machine git.sapienzaapps.it\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
     - export PATH=$PATH:~/go/bin/
     - go env -w GOPRIVATE=git.sapienzaapps.it
-    - go install github.com/securego/gosec/cmd/gosec@v0.0.0-20200401082031-e946c8c39989
-    - go install honnef.co/go/tools/cmd/staticcheck@v0.1.4
-    - go install github.com/gordonklaus/ineffassign@v0.0.0-20210225214923-2e10b2664254
-    - go install github.com/kisielk/errcheck@v1.6.0
     - go install github.com/psampaz/go-mod-outdated@v0.8.0
+    - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
+#    - wget https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.tar.gz -O /tmp/trivy_0.18.3_Linux-64bit.tar.gz
+#    - tar xf /tmp/trivy_0.18.3_Linux-64bit.tar.gz -C /usr/local/bin/ trivy
   script:
     # go test cannot modify go.sum and go.mod starting from Go 1.16. But some
     # tests require additional dependencies and causes the command to fail. So
@@ -22,9 +21,5 @@ codecheck:
     # See official docs: https://golang.org/ref/mod#build-commands
     # And related issue: https://github.com/golang/go/issues/44129#issuecomment-814131122
     - go test ./... -mod=mod
-    - go vet ./...
-    - gosec -quiet ./...
-    - staticcheck -tests=false ./...
-    - ineffassign ./...
-    - errcheck ./...
+    - golangci-lint run
     - go list -u -m -json all | go-mod-outdated -update -direct

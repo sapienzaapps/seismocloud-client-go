@@ -21,6 +21,7 @@ func GetPublicIP() (net.IP, error) {
 	if err != nil {
 		return net.IPv4zero, nil
 	}
+	defer func() { _ = resp.Body.Close() }()
 
 	ipaddr, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

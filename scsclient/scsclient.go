@@ -2,6 +2,7 @@ package scsclient
 
 import (
 	"crypto/tls"
+	"github.com/sirupsen/logrus"
 	"net"
 	"time"
 
@@ -14,47 +15,47 @@ type Client interface {
 	// Connect to the SeismoCloud network
 	Connect() error
 
-	// Check if it's connected to the SeismoCloud network
+	// IsConnected check if it's connected to the SeismoCloud network
 	IsConnected() bool
 
-	// Returns the configured Device ID
+	// GetDeviceID returns the configured Device ID
 	GetDeviceID() uuid.UUID
 
-	// Send alive manually (IMPORTANT: this is periodically called by an internal ticker, so normally there is no need
-	// to call alive manually)
+	// SendAlive sends ALIVE command manually (IMPORTANT: this is periodically called by an internal ticker, so normally
+	// there is no need to call alive manually)
 	SendAlive() error
 
-	// This function sends the new value for temperature sensor (if available)
+	// SendTemperature sends the new value for temperature sensor (if available)
 	SendTemperature(temp float64) error
 
-	// This function sends the level of battery (if available)
+	// SendBattery sends the level of battery (if available)
 	SendBattery(batteryLevel float64) error
 
-	// This function sends the current power source (if available)
+	// SendPowerSource sends the current power source (if available)
 	SendPowerSource(source PowerSource) error
 
-	// This function sends the current location (if available)
+	// SendLocation sends the current location (if available)
 	SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error
 
-	// This function send the QUAKE message when a new vibration is detected
+	// Quake send the QUAKE message when a new vibration is detected
 	Quake(quaketime time.Time, x float64, y float64, z float64) error
 
-	// Retrieve the current time from SCS network
+	// RequestTime requests the current time from the SCS network
 	RequestTime() error
 
-	// Send stream data (if enabled)
+	// SendStreamData sends stream data (if enabled) to the server
 	SendStreamData(datatime time.Time, x float64, y float64, z float64) error
 
-	// Setnd local IP address information
+	// SendLocalIP sends local IP address information to the server
 	SendLocalIP(localAddr net.IP) error
 
-	// Send public IP address information
+	// SendPublicIP sends public IP address information to the server
 	SendPublicIP(publicAddr net.IP) error
 
-	// Send WiFi information (if applicable)
+	// SendWiFiInfo sends WiFi information (if applicable) to the server
 	SendWiFiInfo(rssi float64, bssid net.HardwareAddr, essid string) error
 
-	// Send current threshold
+	// SendThreshold sends current threshold to the server
 	SendThreshold(threshold float64) error
 
 	// Close the connection gracefully
@@ -63,45 +64,48 @@ type Client interface {
 
 // ClientOptions represent all options for the SeismoCloud Client
 type ClientOptions struct {
-	// Device ID
+	// DeviceID holds the device ID
 	DeviceID uuid.UUID
 
-	// Model of this sensor. For example: esp8266, uno, etc. Check the documentation
+	// Model of this sensor. For example: esp8266, uno, etc. Check the documentation for possible values
 	Model string
 
 	// Version of the software
 	Version string
 
-	// Function to execute when a new sigma value is received
+	// OnNewSigma is executed when a new sigma value is received
 	OnNewSigma func(Client, float64)
 
-	// Function to execute when a reboot command is received
+	// OnReboot is executed when a reboot command is received
 	OnReboot func(Client)
 
-	// Function to execute when the stream command ("on" or "off") is received
-	// The second parameter indicates whether the stream should be started (true)
-	// or not (false)
+	// OnStreamCommand is executed when the stream command ("on" or "off") is received. The second parameter indicates
+	// whether the stream should be started (true) or stopped (false)
 	OnStreamCommand func(Client, bool)
 
-	// Function to execute when a new probe speed is received. The second
-	// parameter is the new frequency of probing (in Hz)
+	// OnProbeSpeedSet s executed when a new probe speed is received. The second parameter is the new frequency of
+	// probing (in Hz)
 	OnProbeSpeedSet func(Client, int64)
 
-	// Function to execute when a new time is received
+	// OnTimeReceived is executed when a new time is received
 	OnTimeReceived func(Client, int64, int64, int64, int64)
 
-	// SeismoCloud broker URL
-	// For tests/dev, use: tls://mqtt-seismocloud.test.sapienzaapps.it
+	// SeismoCloudBroker is the broker URL (in the form: tcp://hostname:port or tls://hostname:port)
 	SeismoCloudBroker string
 
-	// SeismoCloud broker Username
-	// For tests/dev, use: embedded
+	// Username is the seismoCloud broker username
 	Username string
 
-	// SeismoCloud broker Password
-	// For tests/dev, use: embedded
+	// Password is the seismoCloud broker password
 	Password string
 
-	// Custom CA root store for connection
+	// TLSConfig holds the custom configuration for TLS. Use this for inject the certificate
 	TLSConfig *tls.Config
+
+	// LocalDiscovery indicates whether the local (LAN) discovery part is enabled. When enabled, the sensor replies to
+	// scan probes from apps
+	LocalDiscovery bool
+
+	// Logger is a logger for the library
+	Logger logrus.FieldLogger
 }

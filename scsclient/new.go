@@ -2,6 +2,7 @@ package scsclient
 
 import (
 	"errors"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -12,6 +13,10 @@ import (
 func New(options ClientOptions) (Client, error) {
 	if options.DeviceID == uuid.Nil {
 		return nil, errors.New("device ID is missing")
+	}
+
+	if options.Logger == nil {
+		options.Logger = logrus.New()
 	}
 
 	mqttoptions := mqtt.NewClientOptions()

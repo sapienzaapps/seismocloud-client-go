@@ -3,7 +3,6 @@ package scsclient
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -47,8 +46,10 @@ func (c *_clientimpl) Connect() error {
 		for {
 			select {
 			case <-c.aliveTicker.C:
-				// TODO: log the error
-				_ = c.SendAlive()
+				err := c.SendAlive()
+				if err != nil {
+					c.opts.Logger.WithError(err).Error("Error sending ALIVE command")
+				}
 			case <-c.aliveTickerStop:
 				c.aliveTicker.Stop()
 				// Avoid goroutine leak on stop
@@ -78,9 +79,7 @@ func (c *_clientimpl) Connect() error {
 			if c.opts.OnNewSigma != nil {
 				sigma, err := strconv.ParseFloat(string(message.Payload()), 64)
 				if err != nil {
-					// TODO: use a logger
-					log.Println("Error in sigma payload")
-					log.Println(err)
+					c.opts.Logger.WithError(err).Error("Error in SIGMA payload")
 				} else {
 					c.opts.OnNewSigma(c, sigma)
 				}
@@ -91,22 +90,25 @@ func (c *_clientimpl) Connect() error {
 			}
 		case "timesync":
 			if c.opts.OnTimeReceived != nil {
-
 				tsparts := strings.Split(string(message.Payload()), ";")
 				if len(tsparts) != 3 {
-					return //errors.New("time payload format error")
+					c.opts.Logger.Error("Error in TIMESYNC payload: wrong number of arguments")
+					return
 				}
 				t0, err := strconv.ParseInt(tsparts[0], 10, 64)
 				if err != nil {
-					return //errors.Wrap(err, "time T0 format error")
+					c.opts.Logger.WithError(err).Error("Error in TIMESYNC T0")
+					return
 				}
 				t1, err := strconv.ParseInt(tsparts[1], 10, 64)
 				if err != nil {
-					return //errors.Wrap(err, "time T1 format error")
+					c.opts.Logger.WithError(err).Error("Error in TIMESYNC T1")
+					return
 				}
 				t2, err := strconv.ParseInt(tsparts[2], 10, 64)
 				if err != nil {
-					return //errors.Wrap(err, "time T2 format error")
+					c.opts.Logger.WithError(err).Error("Error in TIMESYNC T2")
+					return
 				}
 				t3 := messageReceivedAt.UnixNano() / 1000000
 
@@ -120,9 +122,7 @@ func (c *_clientimpl) Connect() error {
 			if c.opts.OnProbeSpeedSet != nil {
 				newspeed, err := strconv.ParseInt(string(message.Payload()), 10, 64)
 				if err != nil {
-					// TODO: use a logger
-					log.Println("Error in probe speed payload")
-					log.Println(err)
+					c.opts.Logger.WithError(err).Error("Error in PROBE SPEED payload")
 				} else {
 					c.opts.OnProbeSpeedSet(c, newspeed)
 				}
