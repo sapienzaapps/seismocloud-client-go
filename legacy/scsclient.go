@@ -1,13 +1,14 @@
-// Package scsclient implements a client for the SeismoCloud IoT network.
-package scsclient
+// Package legacy implements a legacy version of the SeismoCloud client. This legacy version accepts a MAC Address as a
+// device ID. This client *MUST* be avoided. Newer implementations should rely on scsclient package.
+package legacy
 
 import (
 	"crypto/tls"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 	"github.com/sirupsen/logrus"
 	"net"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -20,7 +21,7 @@ type Client interface {
 	IsConnected() bool
 
 	// GetDeviceID returns the configured Device ID
-	GetDeviceID() uuid.UUID
+	GetDeviceID() string
 
 	// SendAlive sends ALIVE command manually (IMPORTANT: this is periodically called by an internal ticker, so normally
 	// there is no need to call alive manually)
@@ -33,7 +34,7 @@ type Client interface {
 	SendBattery(batteryLevel float64) error
 
 	// SendPowerSource sends the current power source (if available)
-	SendPowerSource(source PowerSource) error
+	SendPowerSource(source scsclient.PowerSource) error
 
 	// SendLocation sends the current location (if available)
 	SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error
@@ -66,7 +67,7 @@ type Client interface {
 // ClientOptions represent all options for the SeismoCloud Client
 type ClientOptions struct {
 	// DeviceID holds the device ID
-	DeviceID uuid.UUID
+	DeviceID string
 
 	// Model of this sensor. For example: esp8266, uno, etc. Check the documentation for possible values
 	Model string

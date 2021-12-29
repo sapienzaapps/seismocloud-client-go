@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting local discovery...")
 	var sensors = make(chan localdiscovery.Sensor, 1)
 	go func() {
 		for c := range sensors {
