@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // Client is the SeismoCloud client interface
@@ -36,7 +35,7 @@ type Client interface {
 	SendPowerSource(source PowerSource) error
 
 	// SendLocation sends the current location (if available)
-	SendLocation(latitude decimal.Decimal, longitude decimal.Decimal) error
+	SendLocation(latitude float64, longitude float64) error
 
 	// Quake send the QUAKE message when a new vibration is detected
 	Quake(quaketime time.Time, x float64, y float64, z float64) error
